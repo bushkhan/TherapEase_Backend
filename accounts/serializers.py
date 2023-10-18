@@ -1,6 +1,8 @@
+from datetime import timezone
 from rest_framework import serializers
 from .models import CustomUser
 from django.contrib.auth import authenticate
+
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
@@ -19,7 +21,14 @@ class CreateUserSerializer(serializers.ModelSerializer):
             }
         }
         
-        
+    def create(self, validated_data):
+        user = CustomUser.objects.create_user(**validated_data)
+        # Save the registration timestamp when the user is created.
+        user.registration_timestamp = timezone.now()
+        user.save()
+        return user
+    
+    
     def validate(self, attrs):
         email = attrs.get('email', '').strip().lower()
         if CustomUser.objects.filter(email=email).exists():
@@ -30,6 +39,7 @@ class CreateUserSerializer(serializers.ModelSerializer):
         user = CustomUser.objects.create_user(**validated_data)
         return user
     
+
     
 class UpdateUserSerializer(serializers.ModelSerializer):
     class Meta:
@@ -54,13 +64,19 @@ class LoginSerializer(serializers.Serializer):
     
     def validate(self, attrs):
         email = attrs.get('email').lower()
+        print(email)
         password = attrs.get('password')
         
         if not email or not password:
             raise serializers.ValidationError("Please give both email and password.")
         
+        user_exists = CustomUser.objects.filter(email=email).exists()
+        print(user_exists)
+        
         if not CustomUser.objects.filter(email=email).exists():
             raise serializers.ValidationError('Email does not exists.')
+        
+
         
         user = authenticate(request=self.context.get('request'), email=email, password=password,)
             
