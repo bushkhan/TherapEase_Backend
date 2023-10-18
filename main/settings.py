@@ -12,6 +12,9 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 
 from pathlib import Path
 from datetime import timedelta
+from ..accounts.config import EMAIL_HOST_PASSWORD as password
+from ..accounts.config import EMAIL_HOST_USER as email
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -142,5 +145,5 @@ EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
 EMAIL_HOST = "smtp.gmail.com"
 EMAIL_USE_TLS = True
 EMAIL_PORT = 587
-EMAIL_HOST_USER = '21DCO04@aiktc.ac.in'
-EMAIL_HOST_PASSWORD = "00792002@Bushra"
+EMAIL_HOST_USER = email
+EMAIL_HOST_PASSWORD = password
