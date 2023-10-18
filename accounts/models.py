@@ -11,6 +11,7 @@ class UserManager(BaseUserManager):
         email = self.normalize_email(email)
         user = self.model(email=email, **extra_fields)
         user.is_active = True
+        user.is_verified = True
         user.set_password(password)
         user.save() 
         return user

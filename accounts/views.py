@@ -89,8 +89,7 @@ class DeleteUnverifiedUserView(APIView):
 
         # Check if the user is unverified and the registration is older than 10 minutes
         time_difference = timezone.now() - user.registration_timestamp
-        print(time_difference)
-        if time_difference.total_seconds() > 600 and not user.is_verified:
+        if time_difference.total_seconds() > 600 and not user.is_verified and user.is_superuser != True and user.is_staff != True:
             user.delete()
             return Response({
                 "message": "User Deleted."
