@@ -87,7 +87,7 @@ class DeleteUnverifiedUserView(APIView):
         except CustomUser.DoesNotExist:
             return Response("User not found", status=status.HTTP_404_NOT_FOUND)
 
-        # Check if the user is unverified and the registration is older than 5 minutes
+        # Check if the user is unverified and the registration is older than 10 minutes
         time_difference = timezone.now() - user.registration_timestamp
         print(time_difference)
         if time_difference.total_seconds() > 600 and not user.is_verified:
