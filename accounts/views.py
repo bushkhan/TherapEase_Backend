@@ -9,7 +9,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from .emails import send_otp_via_email
 from rest_framework.views import APIView
-from django.utils import timezone
+# from django.utils import timezone
 
 # Create your views here.
 class CreateUserAPI(CreateAPIView):
@@ -69,10 +69,15 @@ class LoginAPI(KnoxViews.LoginView):
     
     
     def post(self, request, format=None):
-        serializer = self.serializer_class(data=request.data)
+        print(request.data)
+        if len(request.data["email"]) < 12:
+            return Response("error")
         
+        serializer = self.serializer_class(data=request.data)
         if  serializer.is_valid(raise_exception=True):
+            
             user = serializer.validated_data['user']
+            
             login(request,user)
             response = super().post(request, format=None)
         else:
@@ -80,22 +85,25 @@ class LoginAPI(KnoxViews.LoginView):
         
         return Response(response.data,status= status.HTTP_200_OK)
 
-class DeleteUnverifiedUserView(APIView):
-    def delete(self, request, user_id):
-        try:
-            user = CustomUser.objects.get(id=user_id)
-        except CustomUser.DoesNotExist:
-            return Response("User not found", status=status.HTTP_404_NOT_FOUND)
 
-        # Check if the user is unverified and the registration is older than 10 minutes
-        time_difference = timezone.now() - user.registration_timestamp
-        if time_difference.total_seconds() > 600 and not user.is_verified and user.is_superuser != True and user.is_staff != True:
-            user.delete()
-            return Response({
-                "message": "User Deleted."
-                }, status=status.HTTP_204_NO_CONTENT)
-        else:
-            return Response({
-                "userid": user_id,
-                "message": "Account is still within the 5-minute window or is verified"
-                }, status=status.HTTP_400_BAD_REQUEST)
+
+
+# class DeleteUnverifiedUserView(APIView):
+#     def delete(self, request, user_id):
+#         try:
+#             user = CustomUser.objects.get(id=user_id)
+#         except CustomUser.DoesNotExist:
+#             return Response("User not found", status=status.HTTP_404_NOT_FOUND)
+
+#         # Check if the user is unverified and the registration is older than 10 minutes
+#         time_difference = timezone.now() - user.registration_timestamp
+#         if time_difference.total_seconds() > 600 and not user.is_verified and user.is_superuser != True and user.is_staff != True:
+#             user.delete()
+#             return Response({
+#                 "message": "User Deleted."
+#                 }, status=status.HTTP_204_NO_CONTENT)
+#         else:
+#             return Response({
+#                 "userid": user_id,
+#                 "message": "Account is still within the 5-minute window or is verified"
+#                 }, status=status.HTTP_400_BAD_REQUEST)

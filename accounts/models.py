@@ -1,6 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
-from django.utils import timezone
+# from django.utils import timezone
 
 # Create your models here.
 
@@ -11,7 +11,6 @@ class UserManager(BaseUserManager):
         email = self.normalize_email(email)
         user = self.model(email=email, **extra_fields)
         user.is_active = True
-        user.is_verified = True
         user.set_password(password)
         user.save() 
         return user
@@ -56,7 +55,7 @@ class CustomUser(AbstractBaseUser):
     is_verified = models.BooleanField(default=False)
     otp = models.CharField(max_length=4, null= True, blank= True)
     
-    registration_timestamp = models.DateTimeField(default=timezone.now)
+    # registration_timestamp = models.DateTimeField(default=timezone.now)
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['gender']

@@ -11,8 +11,8 @@ urlpatterns = [
     path('logout/', LogoutView.as_view()),
     path('logout-all/', LogoutAllView.as_view()),
     path('verify/', views.VerifyOTP.as_view()),
-    path('delete-unverified-user/<int:user_id>/', views.DeleteUnverifiedUserView.as_view()),
-
+    # path('delete-unverified-user/<int:user_id>/', views.DeleteUnverifiedUserView.as_view()),
+    
     
      
 ]

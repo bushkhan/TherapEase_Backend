@@ -1,7 +1,7 @@
-from datetime import timezone
 from rest_framework import serializers
 from .models import CustomUser
 from django.contrib.auth import authenticate
+from .emails import send_otp_via_email
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -24,7 +24,7 @@ class CreateUserSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         user = CustomUser.objects.create_user(**validated_data)
         # Save the registration timestamp when the user is created.
-        user.registration_timestamp = timezone.now()
+        # user.registration_timestamp = timezone.now()
         user.save()
         return user
     
@@ -64,19 +64,20 @@ class LoginSerializer(serializers.Serializer):
     
     def validate(self, attrs):
         email = attrs.get('email').lower()
-        print(email)
         password = attrs.get('password')
         
         if not email or not password:
             raise serializers.ValidationError("Please give both email and password.")
-        
-        user_exists = CustomUser.objects.filter(email=email).exists()
-        print(user_exists)
-        
-        if not CustomUser.objects.filter(email=email).exists():
-            raise serializers.ValidationError('Email does not exists.')
-        
 
+        user = CustomUser.objects.filter(email=email)
+        if user[0].is_verified == False:
+
+            send_otp_via_email(user[0].email)
+            raise serializers.ValidationError("You are not verified. Please verify your account.")
+
+
+        if not user.exists():
+            raise serializers.ValidationError('Email does not exists.')
         
         user = authenticate(request=self.context.get('request'), email=email, password=password,)
             
