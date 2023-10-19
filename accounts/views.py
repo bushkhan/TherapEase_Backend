@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from rest_framework.generics import CreateAPIView, UpdateAPIView
+from rest_framework.generics import CreateAPIView, UpdateAPIView,RetrieveUpdateDestroyAPIView
 from .models import CustomUser
 from rest_framework.permissions import AllowAny
 from .serializers import CreateUserSerializer, UpdateUserSerializer, LoginSerializer, VerifyAccountSerializer
@@ -86,8 +86,9 @@ class LoginAPI(KnoxViews.LoginView):
         return Response(response.data,status= status.HTTP_200_OK)
 
 
-
-
+    
+    
+    
 # class DeleteUnverifiedUserView(APIView):
 #     def delete(self, request, user_id):
 #         try:
