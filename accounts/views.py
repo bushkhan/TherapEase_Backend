@@ -12,15 +12,38 @@ from rest_framework.views import APIView
 # from django.utils import timezone
 
 # Create your views here.
+from rest_framework.response import Response
+from rest_framework import status
+
 class CreateUserAPI(CreateAPIView):
     queryset = CustomUser.objects.all()
     serializer_class = CreateUserSerializer
     permission_classes = (AllowAny,)    
-    
-    
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        
+        try:
+            # Try to create the user and send OTP via email
+            self.perform_create(serializer)
+            
+            # User creation was successful
+            return Response(
+                {"message": "User created successfully"},
+                status=status.HTTP_201_CREATED
+            )
+        except Exception as e:
+            # User creation failed
+            return Response(
+                {"message": "User creation failed", "error": str(e)},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
     def perform_create(self, serializer):
         instance = serializer.save()
         send_otp_via_email(instance.email)
+
         
         
 class VerifyOTP(APIView):
