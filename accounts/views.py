@@ -28,9 +28,12 @@ class CreateUserAPI(CreateAPIView):
             # Try to create the user and send OTP via email
             self.perform_create(serializer)
             
+            
+            user = serializer.instance  # Get the created user instance
+            user_data = CreateUserSerializer(user).data 
             # User creation was successful
             return Response(
-                {"message": "User created successfully"},
+                {"message": "User created successfully","data":user_data},
                 status=status.HTTP_201_CREATED
             )
         except Exception as e:
