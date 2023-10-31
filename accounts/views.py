@@ -65,14 +65,14 @@ class VerifyOTP(APIView):
                         'status': 400,
                         'message': 'Something went wrong',
                         'data': 'Invalid Email id.'
-                    })
+                    },status=status.HTTP_400_BAD_REQUEST)
                     
                 if user[0].otp != otp:
                     return Response({
                         'status': 400,
                         'message': 'Something went wrong',
                         'data': 'Wrong otp.'
-                    })
+                    },status=status.HTTP_400_BAD_REQUEST)
                     
                 user = user.first()
                 user.is_verified = True
@@ -82,7 +82,7 @@ class VerifyOTP(APIView):
                         'status': 200,
                         'message': 'Account Verified Successfully.',
                         'data': {}
-                    })
+                    },status=status.HTTP_200_OK)
             else:
                 return Response(serializer.errors, status=400)
         except Exception as e:

@@ -77,7 +77,8 @@ class LoginSerializer(serializers.Serializer):
         if not CustomUser.objects.filter(email=email).exists():
             raise serializers.ValidationError('Email does not exists.')
 
-        
+        if not CustomUser.objects.filter(password=password).exists():
+            raise serializers.ValidationError('Incorrect Password.')
         
         user = authenticate(request=self.context.get('request'), email=email, password=password,)
         
