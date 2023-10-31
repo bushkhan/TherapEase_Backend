@@ -24,6 +24,8 @@ class CreateUserAPI(CreateAPIView):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         
+        if CustomUser.objects.filter(email=request.data['email'].lower()).exists():
+            return Response({"status":400,"message":"User already Exists."},status=status.HTTP_400_BAD_REQUEST)
         try:
             # Try to create the user and send OTP via email
             self.perform_create(serializer)
@@ -54,7 +56,7 @@ class VerifyOTP(APIView):
         try:
             serializer = VerifyAccountSerializer(data=request.data)
             if serializer.is_valid():
-                email = serializer.data['email']  
+                email = serializer.data['email'].lower()
                 otp = serializer.data['otp']  
                 
                 user = CustomUser.objects.filter(email = email)
@@ -71,6 +73,7 @@ class VerifyOTP(APIView):
                         'message': 'Something went wrong',
                         'data': 'Wrong otp.'
                     })
+                    
                 user = user.first()
                 user.is_verified = True
                 user.save()
@@ -99,18 +102,22 @@ class LoginAPI(KnoxViews.LoginView):
         if len(request.data["email"]) < 12:
             return Response("error")
         
-        serializer = self.serializer_class(data=request.data)
-        if  serializer.is_valid(raise_exception=True):
-            
-            user = serializer.validated_data['user']
-            
-            login(request,user)
-            response = super().post(request, format=None)
-        else:
-            return Response({'errors':serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
-        
-        return Response(response.data,status= status.HTTP_200_OK)
+        if CustomUser.objects.filter(email=request.data['email'].lower()).exists():
 
+            
+            serializer = self.serializer_class(data=request.data)
+            if  serializer.is_valid(raise_exception=True):
+
+                user = serializer.validated_data['user']
+
+                login(request,user)
+                response = super().post(request, format=None)
+            else:
+                return Response({'errors':serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+
+            return Response(response.data,status= status.HTTP_200_OK)
+        else:
+            return Response({"status":400, "message":"Invalid Credentials."},status=status.HTTP_400_BAD_REQUEST)
 
     
     
