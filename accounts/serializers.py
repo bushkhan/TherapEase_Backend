@@ -93,4 +93,3 @@ class LoginSerializer(serializers.Serializer):
 class VerifyAccountSerializer(serializers.Serializer):
     email = serializers.EmailField()
     otp = serializers.CharField()
-    
