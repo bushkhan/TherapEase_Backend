@@ -14,7 +14,12 @@ def send_otp_via_email(email):
               f"Best regards,\n" \
               f"TherapEase Team"
     email_from = settings.EMAIL_HOST
-    send_mail(subject,message,email_from, [email])
+    # send_mail(subject,message,email_from, [email])
+    try:
+        send_mail(subject, message, email_from, [email])
+    except Exception as e:
+        # Handle the exception, e.g., by printing the error message
+        print(f"An error occurred while sending the email: {e}")
     user_obj = CustomUser.objects.get(email= email)
     user_obj.otp = otp
     user_obj.save()

@@ -9,6 +9,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from .emails import send_otp_via_email
 from rest_framework.views import APIView
+from rest_framework import serializers
 # from django.utils import timezone
 
 # Create your views here.
@@ -22,8 +23,16 @@ class CreateUserAPI(CreateAPIView):
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
+        # serializer.is_valid(raise_exception=True)
         
+        try:
+            serializer.is_valid(raise_exception=True)
+        except serializers.ValidationError as e:
+            return Response({"status":500,"message": "User with this email already exists."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+        # if CustomUser.objects.filter(email=request.data['email'].lower()).exists():
+        #     return Response({"status":400,"message":"User already Exists."},status=status.HTTP_400_BAD_REQUEST)
         try:
             # Try to create the user and send OTP via email
             self.perform_create(serializer)
@@ -33,7 +42,7 @@ class CreateUserAPI(CreateAPIView):
             user_data = CreateUserSerializer(user).data 
             # User creation was successful
             return Response(
-                {"message": "User created successfully","data":user_data},
+                {"status":201,"message": "User created successfully","data":user_data},
                 status=status.HTTP_201_CREATED
             )
         except Exception as e:
@@ -54,7 +63,7 @@ class VerifyOTP(APIView):
         try:
             serializer = VerifyAccountSerializer(data=request.data)
             if serializer.is_valid():
-                email = serializer.data['email']  
+                email = serializer.data['email'].lower()
                 otp = serializer.data['otp']  
                 
                 user = CustomUser.objects.filter(email = email)
@@ -63,14 +72,15 @@ class VerifyOTP(APIView):
                         'status': 400,
                         'message': 'Something went wrong',
                         'data': 'Invalid Email id.'
-                    })
+                    },status=status.HTTP_400_BAD_REQUEST)
                     
                 if user[0].otp != otp:
                     return Response({
                         'status': 400,
                         'message': 'Something went wrong',
                         'data': 'Wrong otp.'
-                    })
+                    },status=status.HTTP_400_BAD_REQUEST)
+                    
                 user = user.first()
                 user.is_verified = True
                 user.save()
@@ -79,7 +89,7 @@ class VerifyOTP(APIView):
                         'status': 200,
                         'message': 'Account Verified Successfully.',
                         'data': {}
-                    })
+                    },status=status.HTTP_200_OK)
             else:
                 return Response(serializer.errors, status=400)
         except Exception as e:
@@ -99,20 +109,24 @@ class LoginAPI(KnoxViews.LoginView):
         if len(request.data["email"]) < 12:
             return Response("error")
         
-        serializer = self.serializer_class(data=request.data)
-        if  serializer.is_valid(raise_exception=True):
+        if CustomUser.objects.filter(email=request.data['email'].lower()).exists():
+
             
-            user = serializer.validated_data['user']
-            
-            login(request,user)
-            response = super().post(request, format=None)
+            serializer = self.serializer_class(data=request.data)
+            if  serializer.is_valid(raise_exception=True):
+
+                user = serializer.validated_data['user']
+
+                login(request,user)
+                response = super().post(request, format=None)
+            else:
+                return Response({'errors':serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+
+            return Response(response.data,status= status.HTTP_200_OK)
         else:
-            return Response({'errors':serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"status":400, "message":"Invalid Credentials."},status=status.HTTP_400_BAD_REQUEST)
+
         
-        return Response(response.data,status= status.HTTP_200_OK)
-
-
-    
     
     
 # class DeleteUnverifiedUserView(APIView):

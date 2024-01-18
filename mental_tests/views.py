@@ -22,13 +22,14 @@ from rest_framework.response import Response
 class AnxietyTestCreateView(CreateAPIView):
     queryset = AnxietyTest.objects.all()
     serializer_class = AnxietyTestSerializer
-    permission_classes = [IsAuthenticated, ~IsAdminUser]
+    # permission_classes = [IsAuthenticated, ~IsAdminUser]
+    permission_classes = (IsAuthenticated, )
     
     
 class AnxietyTestDetailView(ListAPIView):
     queryset = AnxietyTest.objects.all()
     serializer_class = AnxietyTestMultipleTestSerializer
-    permission_classes = [IsAuthenticated]  # Adjust permissions as needed
+    permission_classes = (AllowAny, )  # Adjust permissions as needed
 
 
     def get_queryset(self):
